@@ -54,9 +54,9 @@ func TestGetByUID(t *testing.T) {
 		t.Error(err)
 	}
 
-	tx := NewTxn(c)
+	tx := NewTxn(c).CommitNow()
 
-	err = tx.Mutate(source, true)
+	err = tx.Mutate(source)
 	if err != nil {
 		t.Error(err)
 	}
@@ -86,9 +86,9 @@ func TestGetByFilter(t *testing.T) {
 	}
 	defer dropAll(c)
 
-	tx := NewTxn(c)
+	tx := NewTxn(c).CommitNow()
 
-	err := tx.Mutate(source, true)
+	err := tx.Mutate(source)
 	if err != nil {
 		t.Error(err)
 	}
@@ -402,8 +402,8 @@ func TestQueryBlock(t *testing.T) {
 		})
 	}
 
-	tx := NewTxn(c)
-	if err := tx.Create(&models, true); err != nil {
+	tx := NewTxn(c).CommitNow()
+	if err := tx.Create(&models); err != nil {
 		t.Error(err)
 		return
 	}
@@ -455,8 +455,8 @@ func TestGetNodesAndCount(t *testing.T) {
 		})
 	}
 
-	tx := NewTxn(c)
-	if err := tx.Create(&models, true); err != nil {
+	tx := NewTxn(c).CommitNow()
+	if err := tx.Create(&models); err != nil {
 		t.Error(err)
 		return
 	}

@@ -79,7 +79,7 @@ func TestDeleteFilter(t *testing.T) {
 		t.Error(err)
 	}
 
-	_, err = NewTxn(c).Delete(&User{}, true).
+	_, err = NewTxn(c).CommitNow().Delete(&User{}).
 		Filter(`allofterms(name, "wildan")`).
 		Nodes()
 	if err != nil {
@@ -104,9 +104,9 @@ func TestDeleteQuery(t *testing.T) {
 	school := School{
 		Name: "wildan's school",
 	}
-	tx := NewTxn(c)
+	tx := NewTxn(c).CommitNow()
 
-	err := tx.Create(&school, true)
+	err := tx.Create(&school)
 	if err != nil {
 		t.Error(err)
 	}
@@ -140,7 +140,7 @@ func TestDeleteQuery(t *testing.T) {
 		t.Error(err)
 	}
 
-	nodes, err := NewTxn(c).Delete(&User{}, true).
+	nodes, err := NewTxn(c).CommitNow().Delete(&User{}).
 		Query(`@filter(allofterms(name, "wildan")) {
 			uid
 			schools {
@@ -202,7 +202,7 @@ func TestDeleteQueryNode(t *testing.T) {
 		t.Error(err)
 	}
 
-	nodes, err := NewTxn(c).Delete(&User{}, true).
+	nodes, err := NewTxn(c).CommitNow().Delete(&User{}).
 		Query(`@filter(eq(email, "wildan2711@gmail.com")) {
 			uid
 			schools {
@@ -246,9 +246,9 @@ func TestDeleteEdge(t *testing.T) {
 		},
 	}
 
-	tx := NewTxn(c)
+	tx := NewTxn(c).CommitNow()
 
-	err := tx.Create(&schools, true)
+	err := tx.Create(&schools)
 	if err != nil {
 		t.Error(err)
 	}
@@ -262,7 +262,7 @@ func TestDeleteEdge(t *testing.T) {
 		Schools:  schools,
 	}
 
-	err = NewTxn(c).Create(&user, true)
+	err = NewTxn(c).CommitNow().Create(&user)
 	if err != nil {
 		t.Error(err)
 	}
@@ -277,7 +277,7 @@ func TestDeleteEdge(t *testing.T) {
 
 	assert.Len(t, user.Schools, 4)
 
-	err = NewTxn(c).Delete(&user, true).
+	err = NewTxn(c).CommitNow().Delete(&user).
 		Edge(user.UID, "schools", user.Schools[0].UID)
 	if err != nil {
 		t.Error(err)
@@ -293,7 +293,7 @@ func TestDeleteEdge(t *testing.T) {
 
 	assert.Len(t, user.Schools, 3)
 
-	err = NewTxn(c).Delete(&user, true).
+	err = NewTxn(c).CommitNow().Delete(&user).
 		Edge(user.UID, "schools")
 	if err != nil {
 		t.Error(err)

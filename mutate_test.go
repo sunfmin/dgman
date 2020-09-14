@@ -158,9 +158,9 @@ func TestAddNode(t *testing.T) {
 	c := newDgraphClient()
 	defer dropAll(c)
 
-	tx := NewTxn(c)
+	tx := NewTxn(c).CommitNow()
 
-	err := tx.Mutate(testData, true)
+	err := tx.Mutate(testData)
 	if err != nil {
 		t.Error(err)
 	}
@@ -199,8 +199,8 @@ func TestAddCustomNode(t *testing.T) {
 	c := newDgraphClient()
 	defer dropAll(c)
 
-	tx := NewTxn(c)
-	err := tx.Mutate(&testData, true)
+	tx := NewTxn(c).CommitNow()
+	err := tx.Mutate(&testData)
 	if err != nil {
 		t.Error(err)
 	}
@@ -345,7 +345,7 @@ func TestCreateNull(t *testing.T) {
 		No:       4,
 	}
 
-	if err := NewTxn(c).Create(&testUniqueNull, true); err != nil {
+	if err := NewTxn(c).CommitNow().Create(&testUniqueNull); err != nil {
 		t.Error(err)
 	}
 
@@ -356,7 +356,7 @@ func TestCreateNull(t *testing.T) {
 		No:       5,
 	}
 
-	if err := NewTxn(c).Create(&testUniqueNullAgain, true); err != nil {
+	if err := NewTxn(c).CommitNow().Create(&testUniqueNullAgain); err != nil {
 		t.Error(err)
 	}
 }
@@ -383,24 +383,24 @@ func TestUpdate(t *testing.T) {
 		},
 	}
 
-	tx := NewTxn(c)
-	if err := tx.Create(&testUniques, true); err != nil {
+	tx := NewTxn(c).CommitNow()
+	if err := tx.Create(&testUniques); err != nil {
 		t.Error(err)
 	}
 
 	testUpdate := testUniques[0]
 	testUpdate.Username = "wildan2711"
 
-	tx = NewTxn(c)
-	if err := tx.Update(&testUpdate, true); err != nil {
+	tx = NewTxn(c).CommitNow()
+	if err := tx.Update(&testUpdate); err != nil {
 		t.Error(err)
 	}
 
 	testUpdate2 := testUniques[1]
 	testUpdate2.Username = "wildan2711"
 
-	tx = NewTxn(c)
-	if err := tx.Update(&testUpdate2, true); err != nil {
+	tx = NewTxn(c).CommitNow()
+	if err := tx.Update(&testUpdate2); err != nil {
 		if uniqueErr, ok := err.(*UniqueError); ok {
 			if uniqueErr.Field != "username" {
 				t.Error("wrong unique field")
@@ -427,8 +427,8 @@ func TestUpsert(t *testing.T) {
 		No:       1,
 	}
 
-	tx := NewTxn(c)
-	if err := tx.Upsert(testUpsert, "username", true); err != nil {
+	tx := NewTxn(c).CommitNow()
+	if err := tx.Upsert(testUpsert, "username"); err != nil {
 		t.Error(err)
 	}
 
@@ -441,8 +441,8 @@ func TestUpsert(t *testing.T) {
 		No:       2,
 	}
 
-	tx = NewTxn(c)
-	if err := tx.Upsert(testUpsert2, "username", true); err != nil {
+	tx = NewTxn(c).CommitNow()
+	if err := tx.Upsert(testUpsert2, "username"); err != nil {
 		t.Error(err)
 	}
 
@@ -464,7 +464,7 @@ func TestUpsert(t *testing.T) {
 		No:       3,
 	}
 
-	if err := NewTxn(c).Create(testCreate, true); err != nil {
+	if err := NewTxn(c).CommitNow().Create(testCreate); err != nil {
 		t.Error(err)
 	}
 
@@ -475,8 +475,8 @@ func TestUpsert(t *testing.T) {
 		No:       4,
 	}
 
-	tx = NewTxn(c)
-	if err := tx.Upsert(testUpsert3, "username", true); err != nil {
+	tx = NewTxn(c).CommitNow()
+	if err := tx.Upsert(testUpsert3, "username"); err != nil {
 		if uniqueErr, ok := err.(*UniqueError); ok {
 			if uniqueErr.Field != "email" {
 				t.Error("wrong unique field")
@@ -511,16 +511,16 @@ func TestCreateOrGet(t *testing.T) {
 		},
 	}
 
-	tx := NewTxn(c)
-	if err := tx.Create(&testUniques, true); err != nil {
+	tx := NewTxn(c).CommitNow()
+	if err := tx.Create(&testUniques); err != nil {
 		t.Error(err)
 	}
 
 	testCreateOrGet := testUniques[1]
 	testCreateOrGet.Email = "wildan2711@gmail.com"
 
-	tx = NewTxn(c)
-	if err := tx.CreateOrGet(&testCreateOrGet, "email", true); err != nil {
+	tx = NewTxn(c).CommitNow()
+	if err := tx.CreateOrGet(&testCreateOrGet, "email"); err != nil {
 		t.Error(err)
 	}
 

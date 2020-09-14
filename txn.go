@@ -24,8 +24,9 @@ import (
 
 // TxnContext is dgo transaction coupled with context
 type TxnContext struct {
-	txn *dgo.Txn
-	ctx context.Context
+	txn       *dgo.Txn
+	ctx       context.Context
+	commitNow bool
 }
 
 // Commit calls Commit on the dgo transaction.
@@ -59,20 +60,25 @@ func (t *TxnContext) Context() context.Context {
 	return t.ctx
 }
 
+// CommitNow specifies whether to commit as soon as a mutation is called,
+//
+// i.e: set CommitNow: true in dgo.api.Mutation.
+//
+// If this is called, a transaction can only be used for a single mutation.
+func (t *TxnContext) CommitNow() *TxnContext {
+	t.commitNow = true
+	return t
+}
+
 // Mutate is a shortcut to create mutations from data to be marshalled into JSON,
 // it will inject the node type from the Struct name
-func (t *TxnContext) Mutate(data interface{}, commitNow ...bool) error {
-	optCommitNow := false
-	if len(commitNow) > 0 {
-		optCommitNow = commitNow[0]
-	}
-
+func (t *TxnContext) Mutate(data interface{}) error {
 	mType, err := newMutateType(data)
 	if err != nil {
 		return err
 	}
 
-	assigned, err := mutate(t.ctx, t.txn, data, optCommitNow)
+	assigned, err := mutate(t.ctx, t.txn, data, t.commitNow)
 	if err != nil {
 		return err
 	}
@@ -82,8 +88,8 @@ func (t *TxnContext) Mutate(data interface{}, commitNow ...bool) error {
 
 // Create create node(s) with field unique checking, similar to Mutate,
 // will inject node type from the Struct name
-func (t *TxnContext) Create(data interface{}, commitNow ...bool) error {
-	mutation, err := newMutation(t, data, commitNow...)
+func (t *TxnContext) Create(data interface{}) error {
+	mutation, err := newMutation(t, data)
 	if err != nil {
 		return err
 	}
@@ -92,8 +98,8 @@ func (t *TxnContext) Create(data interface{}, commitNow ...bool) error {
 
 // Update updates a node by their UID with field unique checking, similar to Mutate,
 // will inject node type from the Struct name
-func (t *TxnContext) Update(data interface{}, commitNow ...bool) error {
-	mutation, err := newMutation(t, data, commitNow...)
+func (t *TxnContext) Update(data interface{}) error {
+	mutation, err := newMutation(t, data)
 	if err != nil {
 		return err
 	}
@@ -103,8 +109,8 @@ func (t *TxnContext) Update(data interface{}, commitNow ...bool) error {
 
 // Upsert will update a node when a value from the passed predicate (with the node type) exists, otherwise insert the node.
 // On all conditions, unique checking holds on the node type on other unique fields.
-func (t *TxnContext) Upsert(data interface{}, predicate string, commitNow ...bool) error {
-	mutation, err := newMutation(t, data, commitNow...)
+func (t *TxnContext) Upsert(data interface{}, predicate string) error {
+	mutation, err := newMutation(t, data)
 	if err != nil {
 		return err
 	}
@@ -116,8 +122,8 @@ func (t *TxnContext) Upsert(data interface{}, predicate string, commitNow ...boo
 }
 
 // CreateOrGet will create a node or if a node with a value from the passed predicate exists, return the node
-func (t *TxnContext) CreateOrGet(data interface{}, predicate string, commitNow ...bool) error {
-	mutation, err := newMutation(t, data, commitNow...)
+func (t *TxnContext) CreateOrGet(data interface{}, predicate string) error {
+	mutation, err := newMutation(t, data)
 	if err != nil {
 		return err
 	}
@@ -130,14 +136,9 @@ func (t *TxnContext) CreateOrGet(data interface{}, predicate string, commitNow .
 }
 
 // Delete prepares a delete mutation using a query
-func (t *TxnContext) Delete(model interface{}, commitNow ...bool) *Deleter {
-	optCommitNow := false
-	if len(commitNow) > 0 {
-		optCommitNow = commitNow[0]
-	}
-
+func (t *TxnContext) Delete(model interface{}) *Deleter {
 	q := &Query{ctx: t.ctx, tx: t.txn, model: model, name: "data"}
-	return &Deleter{q: q, ctx: t.ctx, tx: t.txn, commitNow: optCommitNow}
+	return &Deleter{q: q, ctx: t.ctx, tx: t.txn, commitNow: t.commitNow}
 }
 
 // Get prepares a query for a model

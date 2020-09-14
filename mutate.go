@@ -180,18 +180,13 @@ type mutation struct {
 	commitNow   bool
 }
 
-func newMutation(tx *TxnContext, data interface{}, commitNow ...bool) (*mutation, error) {
-	optCommitNow := false
-	if len(commitNow) > 0 {
-		optCommitNow = commitNow[0]
-	}
-
+func newMutation(tx *TxnContext, data interface{}) (*mutation, error) {
 	mType, err := newMutateType(data)
 	if err != nil {
 		return nil, err
 	}
 
-	return &mutation{txn: tx.txn, ctx: tx.ctx, mType: mType, commitNow: optCommitNow}, nil
+	return &mutation{txn: tx.txn, ctx: tx.ctx, mType: mType, commitNow: tx.commitNow}, nil
 }
 
 func (m *mutation) do() error {

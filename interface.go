@@ -29,13 +29,15 @@ type TxnInterface interface {
 	Txn() *dgo.Txn
 	WithContext(context.Context)
 	Context() context.Context
-	Mutate(data interface{}, commitNow ...bool) error
-	Create(data interface{}, commitNow ...bool) error
-	Update(data interface{}, commitNow ...bool) error
-	Upsert(data interface{}, predicate string, commitNow ...bool) error
-	CreateOrGet(data interface{}, predicate string, commitNow ...bool) error
-	Delete(model interface{}, commitNow ...bool) *Deleter
+	CommitNow() *TxnContext
+	Mutate(data interface{}) error
+	Create(data interface{}) error
+	Update(data interface{}) error
+	Upsert(data interface{}, predicate string) error
+	CreateOrGet(data interface{}, predicate string) error
+	Delete(model interface{}) *Deleter
 	Get(model interface{}) *Query
+	Query(blocks ...*Query) *QueryBlock
 }
 
 // SchemaType allows defining a custom type as a dgraph schema type
